@@ -78,7 +78,7 @@ final class SyncJob
                         $n++;
                     }
                 }
-                $perLayer[] = Layers::label($layer['kind'], $layer['scheme'], $layer['stage']) . 's ' . $n;
+                $perLayer[] = Layers::label($layer['kind'], $layer['scheme'], $layer['stage']) . ': ' . $n;
                 // A layer that suddenly comes back empty is an outage, not every licence ending at once.
                 $held = $this->heldInLayer($layer);
                 if ($n === 0 && $held >= 5) {
