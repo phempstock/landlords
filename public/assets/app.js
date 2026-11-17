@@ -343,7 +343,7 @@
     var n = group.units.length;
     var head = '<h3 class="card-address">' + esc(group.address || 'Address not given') + '</h3>';
     var actions = '<div class="card-actions">' +
-      (u.url ? '<a class="btn-council" href="' + esc(u.url) + '" target="_blank" rel="noopener">About this licence<span class="sr-only"> (council website, opens in a new tab)</span></a>' : '') +
+      (u.url ? '<a class="btn-council" href="' + esc(u.url) + '" target="_blank" rel="noopener">About this licensing scheme<span class="sr-only"> (council website, opens in a new tab)</span></a>' : '') +
       '<button type="button" class="btn-copy" data-id="' + esc(state.byId.get(state.active) === group ? state.active : group.id) + '">Copy link</button>' +
       '</div>';
     if (n === 1) {

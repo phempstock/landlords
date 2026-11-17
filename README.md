@@ -1,6 +1,6 @@
 # LANDLORDS – Rented homes in The Park
 
-A map of licensed rented homes in and around The Park Conservation Area, Nottingham: houses in multiple occupation (HMOs), other privately rented homes with selective licences, pending licence applications, and purpose-built student accommodation. Residents can sign up for a weekly email of what has changed. Run by the Nottingham Park Residents' Association (NPRA) at [landlords.npra.co.uk](https://landlords.npra.co.uk), alongside [NIMBY](https://nimby.parknews.co.uk), the planning watch, whose code and look it shares.
+A map of licensed rented homes in and around The Park Conservation Area, Nottingham: houses in multiple occupation (HMOs), other privately rented homes with selective licences, pending licence applications, and purpose-built student accommodation. Residents can sign up for a weekly email of what has changed. Run by the Nottingham Park Residents' Association (NPRA) at [landlords.parknews.co.uk](https://landlords.parknews.co.uk), alongside [NIMBY](https://nimby.parknews.co.uk), the planning watch, whose code and look it shares.
 
 ## How it works
 
@@ -58,7 +58,7 @@ Deployment and server tasks run from GitHub Actions over SSH (`deploy/ionos.sh`)
 
 1. **Database.** In the IONOS control panel (Hosting > Databases), create a new MariaDB database for LANDLORDS. Note its host name, database name, user name and password.
 2. **Mailbox.** Create the mailbox landlords@npra.co.uk. For good delivery, npra.co.uk needs SPF, DKIM and DMARC records; IONOS sets the first two up for domains it hosts.
-3. **Subdomain.** Point `landlords.npra.co.uk` at the webspace folder `/landlords/public` and switch on its SSL certificate.
+3. **Subdomain.** Point `landlords.parknews.co.uk` at the webspace folder `/landlords/public`. The existing `*.parknews.co.uk` wildcard certificate covers it. (The site was first set up at landlords.npra.co.uk; that address still points at the same folder and `public/.htaccess` redirects it, and plain http://, to https://landlords.parknews.co.uk.)
 4. **GitHub secrets.** Under **Settings > Secrets and variables > Actions > New repository secret**, add:
    - `IONOS_SSH_HOST`, `IONOS_SSH_USER`, `IONOS_SSH_KEY`: the same three values as in the NIMBY repository
    - `LANDLORDS_DB_HOST`, `LANDLORDS_DB_NAME`, `LANDLORDS_DB_USER`, `LANDLORDS_DB_PASSWORD`: from step 1

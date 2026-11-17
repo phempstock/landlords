@@ -55,7 +55,7 @@ function landlords_config(?string $path = null): array
     }
     // Defaults for settings added after the site went live.
     $config['site'] = ($config['site'] ?? []) + [
-        'url'           => 'https://landlords.npra.co.uk',
+        'url'           => 'https://landlords.parknews.co.uk',
         'organisation'  => 'the Nottingham Park Residents\' Association (NPRA)',
         'contact_email' => 'landlords@npra.co.uk',
     ];

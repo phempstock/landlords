@@ -429,7 +429,7 @@ function emailKit(PDO $pdo, bool $open = true): array
     }
     $store = new SubscriberStore($pdo);
     $mailer = new LogMailer();
-    $signup = new SignupService($store, $settings, $mailer, 'https://landlords.npra.co.uk');
+    $signup = new SignupService($store, $settings, $mailer, 'https://landlords.parknews.co.uk');
     return compact('settings', 'store', 'mailer', 'signup');
 }
 
@@ -465,7 +465,7 @@ test('Sign-up: double opt-in, expiry and rate limit', function () {
     $row = $store->findByEmail('jane.doe@example.com');
     check($row && $row['status'] === 'pending' && $row['name'] === 'Jane Doe', 'stored as pending, lower-cased, name cleaned');
     $msg = $mailer->sent[0];
-    check($msg->subject === 'Confirm your LANDLORDS weekly email' && str_contains($msg->html, 'Hello Jane Doe') && str_contains($msg->text, 'https://landlords.npra.co.uk/confirm.php?token='), 'confirmation email');
+    check($msg->subject === 'Confirm your LANDLORDS weekly email' && str_contains($msg->html, 'Hello Jane Doe') && str_contains($msg->text, 'https://landlords.parknews.co.uk/confirm.php?token='), 'confirmation email');
     $token = tokenFrom($msg->text);
     check(strlen($token) === 48 && $row['confirm_hash'] === hash('sha256', $token), 'only a hash of the token is stored');
     check($signup->confirm($token, '2026-11-01 11:00:00')['code'] === 'confirmed' && $store->findByEmail('jane.doe@example.com')['status'] === 'active', 'link confirms');
@@ -486,7 +486,7 @@ test('Unsubscribe and deletion', function () {
     $id = (int) $store->findByEmail('leaver@example.com')['id'];
     $url = $signup->unsubscribeUrl($id);
     parse_str((string) parse_url($url, PHP_URL_QUERY), $q);
-    check(str_starts_with($url, 'https://landlords.npra.co.uk/unsubscribe.php?s=' . $id . '&t='), 'unsubscribe link');
+    check(str_starts_with($url, 'https://landlords.parknews.co.uk/unsubscribe.php?s=' . $id . '&t='), 'unsubscribe link');
     check(!$signup->unsubscribe($id, str_repeat('0', 32), '2026-11-02 10:00:00'), 'wrong token refused');
     check($signup->unsubscribe($id, $q['t'], '2026-11-02 10:00:00') && $store->find($id)['status'] === 'unsubscribed', 'unsubscribed');
     $p = $store->purge('2026-12-02 10:00:01');
@@ -495,7 +495,7 @@ test('Unsubscribe and deletion', function () {
 
 function digestKit(array $h, array $kit, int $maxPerRun = 200): DigestSender
 {
-    $builder = new DigestBuilder('https://landlords.npra.co.uk', 50, "the Nottingham Park Residents' Association (NPRA)");
+    $builder = new DigestBuilder('https://landlords.parknews.co.uk', 50, "the Nottingham Park Residents' Association (NPRA)");
     $report = new ChangeReport($h['pdo'], readJson($h['dir'] . '/public/park-boundary.geojson'));
     return new DigestSender($h['pdo'], $kit['store'], $kit['signup'], $kit['mailer'], $builder, $report, $maxPerRun, 0);
 }
@@ -527,10 +527,10 @@ test('Monday digest', function () {
     $h3 = strpos($m->html, 'Purpose-built student accommodation');
     check($h1 !== false && $h1 < $h2 && $h2 < $h3, 'three sections in order');
     check(str_contains($m->html, 'Licence renewed') && str_contains($m->html, '230 Derby Road, NG7 1NX'), 'renewal listed with a tidy address');
-    check(preg_match('#https://landlords\.npra\.co\.uk/\?p=[0-9a-f]{10}#', $m->html) === 1, 'links to pins');
+    check(preg_match('#https://landlords\.parknews\.co\.uk/\?p=[0-9a-f]{10}#', $m->html) === 1, 'links to pins');
     check(str_contains($m->html, '(just outside The Park)'), 'margin properties marked');
     check(!str_contains($m->html, '<b>Example</b>') && str_contains($m->html, '&lt;b&gt;Example&lt;/b&gt; Street &amp; Co'), 'council text escaped');
-    check(str_starts_with($m->headers['List-Unsubscribe'], '<https://landlords.npra.co.uk/unsubscribe.php?s=')
+    check(str_starts_with($m->headers['List-Unsubscribe'], '<https://landlords.parknews.co.uk/unsubscribe.php?s=')
         && $m->headers['List-Unsubscribe-Post'] === 'List-Unsubscribe=One-Click', 'one-click unsubscribe headers');
     check(str_contains($m->text, 'LICENCE ENDED') === false && str_contains($m->text, 'Licence ended: 9 Harrington Drive, NG7 1JQ (just outside The Park)'), 'plain text version');
 

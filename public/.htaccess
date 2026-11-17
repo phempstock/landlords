@@ -1,3 +1,15 @@
+# One address, always over HTTPS: the old landlords.npra.co.uk address (which has no
+# certificate) and plain http:// both go to https://landlords.parknews.co.uk.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^landlords\.npra\.co\.uk$ [NC,OR]
+    RewriteCond %{HTTP_HOST} ^landlords\.parknews\.co\.uk$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://landlords.parknews.co.uk%{REQUEST_URI} [L,R=301]
+    RewriteCond %{HTTP_HOST} ^landlords\.npra\.co\.uk$ [NC]
+    RewriteRule ^ https://landlords.parknews.co.uk%{REQUEST_URI} [L,R=301]
+</IfModule>
+
 # The project folder's own .htaccess denies all web access (protecting config.php
 # and data/). Apache applies that to sub-folders too, so re-allow this one: public/
 # is the only folder that should be served.

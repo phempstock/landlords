@@ -14,7 +14,7 @@ final class CurlHttpClient implements HttpClient
     public function __construct(
         private int $timeoutSeconds = 60,
         private int $maxAttempts = 3,
-        private string $userAgent = 'LANDLORDS rented homes map (landlords.npra.co.uk)'
+        private string $userAgent = 'LANDLORDS rented homes map (landlords.parknews.co.uk)'
     ) {
     }
 
