@@ -1,0 +1,42 @@
+name: Server tasks
+
+# Run by hand from the Actions tab (or by Claude) to manage the IONOS server.
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: What to do on the IONOS server
+        type: choice
+        options:
+          - check
+          - configure
+          - deploy
+          - setup
+          - sync
+          - cron
+          - test-digest
+          - signup-status
+          - signup-open
+          - signup-close
+        default: check
+
+concurrency: ionos-server
+
+jobs:
+  run:
+    name: ${{ inputs.task }}
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.IONOS_SSH_HOST }}
+      SSH_USER: ${{ secrets.IONOS_SSH_USER }}
+      SSH_KEY: ${{ secrets.IONOS_SSH_KEY }}
+      # Only the configure task uses these; it writes them into config.php on the server.
+      DB_HOST: ${{ inputs.task == 'configure' && secrets.LANDLORDS_DB_HOST || '' }}
+      DB_NAME: ${{ inputs.task == 'configure' && secrets.LANDLORDS_DB_NAME || '' }}
+      DB_USER: ${{ inputs.task == 'configure' && secrets.LANDLORDS_DB_USER || '' }}
+      DB_PASSWORD: ${{ inputs.task == 'configure' && secrets.LANDLORDS_DB_PASSWORD || '' }}
+      MAIL_PASSWORD: ${{ inputs.task == 'configure' && secrets.LANDLORDS_MAIL_PASSWORD || '' }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run ${{ inputs.task }}
+        run: bash deploy/ionos.sh "${{ inputs.task }}"

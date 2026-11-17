@@ -1,0 +1,33 @@
+# The project folder's own .htaccess denies all web access (protecting config.php
+# and data/). Apache applies that to sub-folders too, so re-allow this one: public/
+# is the only folder that should be served.
+Require all granted
+
+# Serve map data with the right type, compressed (about 4 MB raw, ~0.5 MB gzipped),
+# and cached briefly so a nightly refresh shows up within the hour.
+<IfModule mod_mime.c>
+    AddType application/geo+json .geojson
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json application/geo+json
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(geojson|json)$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+    # Page, script and styles: always check for a newer version (cheap 304 if unchanged).
+    <FilesMatch "\.(html|js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    # Third-party files and fonts change only when re-vendored.
+    <FilesMatch "\.(woff2)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
+
+# Never serve half-written files from the sync job.
+<FilesMatch "\.tmp$">
+    Require all denied
+</FilesMatch>

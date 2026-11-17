@@ -1,0 +1,112 @@
+name: Tests and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2', '8.5']   # 8.5 is what the IONOS server runs
+    name: test (PHP ${{ matrix.php }})
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, pdo_sqlite, pdo_mysql, mbstring
+          ini-values: error_reporting=E_ALL, display_errors=On
+
+      - name: Check PHP syntax
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Run tests (fail on any warning or deprecation)
+        run: |
+          php tests/run.php 2>&1 | tee test-output.txt
+          if grep -E "(Deprecated|Warning|Notice):" test-output.txt; then exit 1; fi
+
+  # The same tests against MariaDB 11, the database IONOS provides.
+  test-mariadb:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: test
+          MARIADB_DATABASE: landlords_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, pdo_mysql, mbstring
+
+      - name: Run tests on MariaDB
+        env:
+          LANDLORDS_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=landlords_test;charset=utf8mb4
+          LANDLORDS_TEST_USER: root
+          LANDLORDS_TEST_PASSWORD: test
+        run: php tests/run.php
+
+  # The map page in a real browser (Chromium), against full-size test data.
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+
+      - name: Run map tests
+        run: |
+          php tests/browser/make-data.php public/data
+          php -S 127.0.0.1:8123 -t public > "$RUNNER_TEMP/php.log" 2>&1 &
+          for i in $(seq 1 50); do curl -s -o /dev/null http://127.0.0.1:8123/ && break; sleep 0.2; done
+          node tests/browser/map.test.js http://127.0.0.1:8123 public/data
+
+      - name: Run email walk-through (sign up, confirm, digest, unsubscribe)
+        run: |
+          SITE="$RUNNER_TEMP/email-site"
+          bash tests/browser/email-setup.sh "$SITE" http://127.0.0.1:8130
+          php -S 127.0.0.1:8130 -t "$SITE/public" > "$RUNNER_TEMP/php-email.log" 2>&1 &
+          for i in $(seq 1 50); do curl -s -o /dev/null http://127.0.0.1:8130/ && break; sleep 0.2; done
+          node tests/browser/email.test.js http://127.0.0.1:8130 "$SITE"
+
+  # Copies the site to IONOS after all test jobs pass on main (see deploy/ionos.sh).
+  # Skipped, with a notice, until the IONOS_SSH_HOST, IONOS_SSH_USER and
+  # IONOS_SSH_KEY repository secrets exist.
+  deploy:
+    needs: [test, test-mariadb, browser]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency: ionos-server
+    env:
+      SSH_HOST: ${{ secrets.IONOS_SSH_HOST }}
+      SSH_USER: ${{ secrets.IONOS_SSH_USER }}
+      SSH_KEY: ${{ secrets.IONOS_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Deploy to IONOS
+        run: |
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_KEY" ]; then
+            echo "::notice title=LANDLORDS server::Deployment skipped: IONOS secrets are not set yet"
+            exit 0
+          fi
+          bash deploy/ionos.sh deploy

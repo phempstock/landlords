@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LANDLORDS – Rented homes in The Park</title>
+  <meta name="description" content="Licensed HMOs, other licensed rented homes and purpose-built student accommodation in and around The Park, Nottingham, from Nottingham City Council’s registers, updated daily.">
+  <meta name="theme-color" content="#1f3d34">
+  <link rel="preload" href="vendor/fonts/alegreya-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/alegreya-sans-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="vendor/markercluster/MarkerCluster.css">
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <a class="skip" href="#results">Skip to the list of properties</a>
+
+  <div class="app">
+    <header class="masthead">
+      <h1 class="wordmark">LANDLORDS</h1>
+      <p class="strap">Rented homes in The Park</p>
+      <p class="fresh" id="fresh" aria-live="polite">Loading the council’s licensing data…</p>
+      <p class="masthead-signup" id="masthead-signup" hidden><a href="#signup">Get the weekly email</a></p>
+    </header>
+
+    <main class="map-wrap">
+      <div id="map" class="map" role="region" aria-label="Map of licensed rented homes in The Park"></div>
+      <p class="notice" id="notice" hidden></p>
+    </main>
+
+    <aside class="panel">
+      <form class="filters" id="filters" role="search" aria-label="Filter properties">
+        <div class="field">
+          <label for="q">Search</label>
+          <input id="q" name="q" type="search" autocomplete="off" spellcheck="false"
+                 placeholder="Street, house or licence reference">
+        </div>
+
+        <fieldset class="field layers">
+          <legend>Show</legend>
+          <div class="layer-list" id="layers"></div>
+          <p class="hint">Numbered circles gather nearby properties; zoom in to separate them. The red corner counts HMOs.</p>
+        </fieldset>
+
+        <label class="toggle" id="nearby-toggle" hidden>
+          <input type="checkbox" id="nearby" checked>
+          <span><span id="nearby-label">Include neighbouring properties</span> <span class="count" id="nearby-count"></span></span>
+        </label>
+      </form>
+
+      <section class="results" id="results" tabindex="-1" aria-labelledby="results-heading">
+        <h2 class="results-heading" id="results-heading" aria-live="polite">Properties</h2>
+        <ol class="list" id="list"></ol>
+        <button type="button" class="more" id="more" hidden>Show more</button>
+      </section>
+
+      <section class="signup" id="signup" aria-labelledby="signup-heading" hidden>
+        <h2 id="signup-heading">Get the weekly email</h2>
+        <p>On Monday mornings, what has changed: new HMO and other licences, renewals, licences that have ended, new applications, and changes to student accommodation in and around The Park. Nothing is sent in weeks with no changes.</p>
+        <form class="signup-form" id="signup-form" action="subscribe.php" method="post" novalidate>
+          <div class="field">
+            <label for="su-email">Email address</label>
+            <input id="su-email" name="email" type="email" autocomplete="email" required maxlength="254">
+          </div>
+          <div class="field">
+            <label for="su-name">Name <span class="optional">(optional)</span></label>
+            <input id="su-name" name="name" type="text" autocomplete="name" maxlength="100">
+          </div>
+          <div class="hp" aria-hidden="true">
+            <label for="su-website">Leave this empty</label>
+            <input id="su-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <label class="toggle consent">
+            <input type="checkbox" name="consent" value="yes" required>
+            <span>Send me the weekly email. I’ve read the <a href="privacy.php">privacy notice</a>.</span>
+          </label>
+          <button type="submit" class="signup-button">Sign up</button>
+          <p class="signup-result" id="signup-result" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="about" aria-labelledby="about-heading">
+        <h2 id="about-heading">What the map shows</h2>
+        <p><strong>HMOs</strong> (houses in multiple occupation) are homes shared by people from more than one household. Larger ones need a <em>mandatory</em> licence; since 2024 smaller ones across Nottingham need an <em>additional</em> licence.</p>
+        <p><strong>Selective licences</strong> cover most other privately rented homes in the parts of the city where the council requires them.</p>
+        <p><strong>Applications</strong> are licences applied for and not yet granted; some are renewals of a licence the property already holds.</p>
+        <p>Only licensed properties and pending applications appear. A home that should be licensed but isn’t won’t be on the map.</p>
+      </section>
+
+      <footer class="credits">
+        <p id="area-note" hidden></p>
+        <p>Pins show where the council has placed each property; positions are approximate. The council’s registers are the official record.</p>
+        <p>Licensing and student accommodation data from Nottingham City Council’s public map service and published registers. © Crown copyright and database rights, OS AC0000822898. Map © OpenStreetMap contributors.</p>
+        <p>Run by the Nottingham Park Residents’ Association. See also <a href="https://nimby.parknews.co.uk">NIMBY</a>, the planning watch for The Park. <a href="privacy.php">Privacy notice</a>. This site sets no cookies.</p>
+      </footer>
+    </aside>
+  </div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/markercluster/leaflet.markercluster.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
